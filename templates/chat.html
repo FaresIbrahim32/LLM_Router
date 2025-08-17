@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Router Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        .typing-indicator {
+            display: none;
+        }
+        .typing-indicator.active {
+            display: flex;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        .priority-btn {
+            transition: all 0.2s ease;
+        }
+        .priority-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        .message-fade-in {
+            animation: fadeInUp 0.5s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-purple-600 font-bold text-xl">🤖</span>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">LLM Router</h1>
+                        <p class="text-purple-100 text-sm">Smart AI Model Selection</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-purple-100">Welcome, {{ current_user.username }}!</span>
+                    <a href="{{ url_for('logout') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition-colors">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <!-- 🎯 PRIORITY CONTROLS - This is what you asked for! -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">🎯 Routing Priority</h2>
+            <div class="flex flex-wrap gap-3">
+                <button class="priority-btn active px-4 py-2 rounded-lg border-2 border-gray-200 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500" data-priority="cost">
+                    💰 Cost Effective
+                </button>
+                <button class="priority-btn px-4 py-2 rounded-lg border-2 border-gray-200 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500" data-priority="speed">
+                    ⚡ Speed
+                </button>
+                <button class="priority-btn px-4 py-2 rounded-lg border-2 border-gray-200 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500" data-priority="quality">
+                    ⭐ Quality
+                </button>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">
+                <span id="priority-description">Choose cost-effective models for simple tasks</span>
+            </p>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="bg-white rounded-xl shadow-lg">
+            <!-- Chat Messages - Shows classification and model recommendations -->
+            <div id="chat-messages" class="chat-container overflow-y-auto p-6 space-y-6">
+                {% if history %}
+                    {% for entry in history %}
+                    <div class="message-fade-in">
+                        <!-- User message -->
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                            <p class="text-gray-800">{{ entry.prompt }}</p>
+                            <span class="text-xs text-gray-500">{{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <!-- AI response with routing details -->
+                        <div class="mt-2 bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                            <div class="flex items-center space-x-4 mb-2">
+                                <!-- 📋 CLASSIFICATION DISPLAY -->
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    📋 {{ entry.classification.replace('_', ' ').title() }}
+                                </span>
+                                <!-- 🤖 RECOMMENDED MODEL DISPLAY -->
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    🤖 {{ entry.recommended_model }}
+                                </span>
+                                <!-- 🎯 PRIORITY DISPLAY -->
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    🎯 {{ entry.priority.title() }}
+                                </span>
+                            </div>
+                            {% set response_data = entry.response | from_json %}
+                            {% if response_data.success %}
+                                <p class="text-gray-700">{{ response_data.content }}</p>
+                                {% if response_data.usage %}
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Tokens: {{ response_data.usage.total_tokens if response_data.usage.total_tokens else 'N/A' }}
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-red-600">Error: {{ response_data.error }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">💬</span>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
+                    <p class="text-gray-500">Ask me anything and I'll route it to the best AI model!</p>
+                </div>
+                {% endif %}
+
+                <!-- Typing Indicator -->
+                <div id="typing-indicator" class="typing-indicator items-center space-x-2 p-4">
+                    <div class="flex space-x-1">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span class="text-gray-500 text-sm ml-2">Routing your request...</span>
+                </div>
+            </div>
+
+            <!-- 🔍 SEARCH BAR - This is the Claude-like search bar you requested! -->
+            <div class="border-t border-gray-200 p-6">
+                <form id="chat-form" class="flex space-x-4">
+                    <input 
+                        type="text" 
+                        id="prompt-input"
+                        placeholder="Ask me anything... (e.g., 'Write a Python function to sort a list' or 'What is machine learning?')"
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        required
+                    >
+                    <button 
+                        type="submit"
+                        id="send-button"
+                        class="gradient-bg text-white px-6 py-3 rounded-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <span class="send-text">Send</span>
+                        <span class="loading-text hidden">Processing...</span>
+                    </button>
+                </form>
+                <div class="mt-2 text-xs text-gray-500">
+                    <span id="current-priority">Current priority: Cost Effective</span> • 
+                    The system will automatically classify your task and select the optimal model
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPriority = 'cost';
+        
+        // Priority descriptions
+        const priorityDescriptions = {
+            cost: 'Choose cost-effective models for simple tasks',
+            speed: 'Prioritize fastest response times',
+            quality: 'Use premium models for best results'
+        };
+        
+        // Priority button handling
+        document.querySelectorAll('.priority-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                // Update current priority
+                currentPriority = this.dataset.priority;
+                // Update description
+                document.getElementById('priority-description').textContent = priorityDescriptions[currentPriority];
+                document.getElementById('current-priority').textContent = `Current priority: ${this.textContent.trim()}`;
+            });
+        });
+        
+        // Form submission - This handles the routing and display
+        document.getElementById('chat-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const promptInput = document.getElementById('prompt-input');
+            const sendButton = document.getElementById('send-button');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+            
+            // Add user message to chat
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message-fade-in';
+            userMessage.innerHTML = `
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                    <p class="text-gray-800">${prompt}</p>
+                    <span class="text-xs text-gray-500">Just now</span>
+                </div>
+            `;
+            chatMessages.appendChild(userMessage);
+            
+            // Clear input and disable form
+            promptInput.value = '';
+            sendButton.disabled = true;
+            sendButton.querySelector('.send-text').style.display = 'none';
+            sendButton.querySelector('.loading-text').style.display = 'inline';
+            
+            // Show typing indicator
+            typingIndicator.classList.add('active');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                const response = await fetch('/process_prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        priority: currentPriority
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide typing indicator
+                typingIndicator.classList.remove('active');
+                
+                if (response.ok) {
+                    // Add AI response with ROUTING DETAILS
+                    const aiMessage = document.createElement('div');
+                    aiMessage.className = 'message-fade-in';
+                    
+                    let responseContent = '';
+                    if (data.api_response.success) {
+                        responseContent = `
+                            <p class="text-gray-700">${data.api_response.content}</p>
+                            ${data.api_response.usage ? `<div class="mt-2 text-xs text-gray-500">Tokens: ${data.api_response.usage.total_tokens || 'N/A'}</div>` : ''}
+                        `;
+                    } else {
+                        responseContent = `<p class="text-red-600">Error: ${data.api_response.error}</p>`;
+                    }
+                    
+                    // 🎯 THIS IS WHERE CLASSIFICATION AND MODEL ARE DISPLAYED
+                    aiMessage.innerHTML = `
+                        <div class="mt-2 bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                            <div class="flex items-center space-x-4 mb-3">
+                                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    📋 ${data.classification.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </span>
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    🤖 ${data.recommended_model}
+                                </span>
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                                    🎯 ${currentPriority.charAt(0).toUpperCase() + currentPriority.slice(1)}
+                                </span>
+                            </div>
+                            <div class="mb-3 p-3 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-blue-800"><strong>Routing Decision:</strong> ${data.routing_explanation}</p>
+                            </div>
+                            ${responseContent}
+                        </div>
+                    `;
+                    chatMessages.appendChild(aiMessage);
+                } else {
+                    // Handle error
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'message-fade-in';
+                    errorMessage.innerHTML = `
+                        <div class="mt-2 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+                            <p class="text-red-700">Error: ${data.error || 'Something went wrong'}</p>
+                        </div>
+                    `;
+                    chatMessages.appendChild(errorMessage);
+                }
+                
+            } catch (error) {
+                // Hide typing indicator
+                typingIndicator.classList.remove('active');
+                
+                // Show network error
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message-fade-in';
+                errorMessage.innerHTML = `
+                    <div class="mt-2 bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+                        <p class="text-red-700">Network error: ${error.message}</p>
+                    </div>
+                `;
+                chatMessages.appendChild(errorMessage);
+            }
+            
+            // Re-enable form
+            sendButton.disabled = false;
+            sendButton.querySelector('.send-text').style.display = 'inline';
+            sendButton.querySelector('.loading-text').style.display = 'none';
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Focus input
+            promptInput.focus();
+        });
+
+        // Focus on input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('prompt-input').focus();
+        });
+    </script>
+</body>
+</html>

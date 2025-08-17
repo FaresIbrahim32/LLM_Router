@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Router - Smart AI Model Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .slide-in {
+            animation: slideInUp 0.8s ease-out;
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .rocket-launch {
+            animation: rocketLaunch 3s ease-in-out infinite;
+        }
+        @keyframes rocketLaunch {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(2deg); }
+            75% { transform: translateY(-3px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 overflow-x-hidden">
+    <!-- Navigation -->
+    <nav class="absolute top-0 w-full z-50 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-2xl hero-animation">🤖</span>
+                    </div>
+                    <span class="text-white font-bold text-xl">LLM Router</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('login') }}" 
+                       class="text-white hover:text-purple-200 transition-colors font-medium">
+                        Login
+                    </a>
+                    <a href="{{ url_for('register') }}" 
+                       class="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:scale-105">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg min-h-screen flex items-center relative overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-4 -right-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+            <div class="absolute -bottom-8 -left-4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+            <div class="text-center slide-in">
+                <div class="hero-animation text-6xl md:text-8xl mb-8 filter drop-shadow-lg">🚀</div>
+                
+                <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                    Smart AI Model
+                    <span class="block gradient-text bg-white bg-clip-text text-transparent">
+                        Selection Made Easy
+                    </span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-purple-100 mb-12 max-w-4xl mx-auto leading-relaxed">
+                    Stop overpaying for AI! Our intelligent router automatically selects the most cost-effective model for your specific task, saving you up to <strong class="text-white">90% on API costs</strong> while maintaining quality.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+                    <a href="{{ url_for('register') }}" 
+                       class="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-110 shadow-2xl rocket-launch">
+                        🚀 Start Routing for Free
+                    </a>
+                    <a href="{{ url_for('login') }}" 
+                       class="border-2 border-white text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-white hover:text-purple-600 transition-all transform hover:scale-105">
+                        📊 View Dashboard
+                    </a>
+                </div>
+
+                <!-- Features Preview -->
+                <div class="grid md:grid-cols-3 gap-8 mt-16">
+                    <div class="glassmorphism rounded-2xl p-6 card-hover">
+                        <div class="text-4xl mb-4 pulse-animation">🎯</div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Smart Classification</h3>
+                        <p class="text-purple-100">Automatically detects task types and routes to optimal models</p>
+                    </div>
+                    <div class="glassmorphism rounded-2xl p-6 card-hover">
+                        <div class="text-4xl mb-4 pulse-animation">💰</div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Cost Optimization</h3>
+                        <p class="text-purple-100">Save up to 90% on API costs with intelligent model selection</p>
+                    </div>
+                    <div class="glassmorphism rounded-2xl p-6 card-hover">
+                        <div class="text-4xl mb-4 pulse-animation">⚡</div>
+                        <h3 class="text-xl font-semibold text-white mb-3">Multiple Priorities</h3>
+                        <p class="text-purple-100">Choose between cost, speed, or quality optimization</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-20 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold gradient-text mb-6">How It Works</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Our intelligent routing system analyzes your prompt and automatically selects the perfect model for your needs
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-purple-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                        <span class="text-3xl">📝</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 gradient-text">1. Enter Your Prompt</h3>
+                    <p class="text-gray-600 leading-relaxed">Type any question, code request, or creative task you need help with</p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                        <span class="text-3xl">🧠</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 gradient-text">2. Smart Analysis</h3>
+                    <p class="text-gray-600 leading-relaxed">AI classifies your task type automatically (code, creative, Q&A, etc.)</p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                        <span class="text-3xl">🎯</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 gradient-text">3. Model Selection</h3>
+                    <p class="text-gray-600 leading-relaxed">Routes to the most cost-effective model based on your priority</p>
+                </div>
+                
+                <div class="text-center group">
+                    <div class="w-20 h-20 bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                        <span class="text-3xl">✨</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 gradient-text">4. Get Results</h3>
+                    <p class="text-gray-600 leading-relaxed">Receive high-quality responses while saving money</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 gradient-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-white mb-6">Why Choose LLM Router?</h2>
+                <p class="text-xl text-purple-100 max-w-3xl mx-auto">
+                    Join thousands of developers and businesses who are saving money with smart AI routing
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">90%</div>
+                    <p class="text-purple-100 text-lg">Cost Savings</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">100+</div>
+                    <p class="text-purple-100 text-lg">AI Models</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">⚡</div>
+                    <p class="text-purple-100 text-lg">Lightning Fast</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-white mb-2">🎯</div>
+                    <p class="text-purple-100 text-lg">Smart Routing</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Preview -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold gradient-text mb-6">Smart Cost Optimization</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    See how much you can save with intelligent model routing
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-lg card-hover border-2 border-gray-100">
+                    <div class="text-2xl mb-4">💰</div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Simple Tasks</h3>
+                    <p class="text-gray-600 mb-6">Questions, summaries, basic requests</p>
+                    <div class="space-y-2">
+                        
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-lg card-hover border-2 border-purple-200">
+                    <div class="text-2xl mb-4">⚡</div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Complex Tasks</h3>
+                    <p class="text-gray-600 mb-6">Analysis, research, detailed work</p>
+                    <div class="space-y-2">
+                       
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-lg card-hover border-2 border-gray-100">
+                    <div class="text-2xl mb-4">🎯</div>
+                    <h3 class="text-2xl font-bold mb-4 gradient-text">Premium Tasks</h3>
+                    <p class="text-gray-600 mb-6">Creative writing, complex coding</p>
+                    <div class="space-y-2">
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                Ready to Save Money on AI?
+            </h2>
+            <p class="text-xl text-purple-100 mb-10 max-w-2xl mx-auto">
+                Join the smart routing revolution and stop overpaying for AI. Start saving up to 90% on your API costs today!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('register') }}" 
+                   class="bg-white text-purple-600 px-10 py-4 rounded-full font-bold text-xl hover:bg-gray-100 transition-all transform hover:scale-110 shadow-2xl rocket-launch">
+                    🚀 Get Started Free
+                </a>
+                <a href="{{ url_for('login') }}" 
+                   class="border-2 border-white text-white px-10 py-4 rounded-full font-semibold text-xl hover:bg-white hover:text-purple-600 transition-all transform hover:scale-105">
+                    Sign In
+                </a>
+            </div>
+            <p class="text-purple-200 text-sm mt-6">No credit card required • Start saving immediately</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full flex items-center justify-center">
+                        <span class="text-xl">🤖</span>
+                    </div>
+                    <span class="text-2xl font-bold">LLM Router</span>
+                </div>
+                <p class="text-gray-400 mb-6">Smart AI model selection for the modern developer</p>
+                <div class="flex justify-center space-x-6">
+                    <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-white transition-colors">Login</a>
+                    <a href="{{ url_for('register') }}" class="text-gray-400 hover:text-white transition-colors">Register</a>
+                </div>
+                <div class="mt-8 pt-8 border-t border-gray-800 text-gray-500">
+                    <p>&copy; 2025 LLM Router. Built with 💜 for developers who care about costs.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Add smooth scrolling and interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Add parallax effect to hero section
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                const hero = document.querySelector('.gradient-bg');
+                if (hero) {
+                    hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+                }
+            });
+
+            // Add intersection observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('slide-in');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all cards
+            document.querySelectorAll('.card-hover').forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>
